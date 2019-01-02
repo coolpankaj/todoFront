@@ -9,8 +9,8 @@ import * as io from 'socket.io-client';
   providedIn: 'root'
 })
 export class SocketService {
-    private url = "http://localhost:3000/";
-  //private url = "http://api.coolcoder.xyz";
+  //  private url = "http://localhost:3000/";
+  private url = "http://api.coolcoder.xyz";
 
   public socket;
 

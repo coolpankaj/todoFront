@@ -8,8 +8,8 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class TodoService {
 
-  private baseUrl = 'http://localhost:3000/api/v1'
-  // private baseUrl = 'http://api.coolcoder.xyz/api/v1'
+ // private baseUrl = 'http://localhost:3000/api/v1'
+   private baseUrl = 'http://api.coolcoder.xyz/api/v1'
   
 
   constructor(public _http: HttpClient, public cookie: CookieService) { }

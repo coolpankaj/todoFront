@@ -6,8 +6,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
   providedIn: 'root'
 })
 export class AppService {
-   private baseUrl = 'http://localhost:3000/api/v1';
- // private baseUrl = 'http://api.coolcoder.xyz/api/v1';
+  // private baseUrl = 'http://localhost:3000/api/v1';
+ private baseUrl = 'http://api.coolcoder.xyz/api/v1';
 
   constructor( private _http: HttpClient) { }
 
