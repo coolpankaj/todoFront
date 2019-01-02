@@ -1,0 +1,965 @@
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand">To Do</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+      aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" [routerLink]="['/todo/single-user']">
+            My Dashboard
+
+            <span class="sr-only">(current)</span>
+          </a>
+        </li>
+
+        <li class="nav-item active">
+          <a class="nav-link" [routerLink]="['/todo/multi-user']">Friend Dashboard</a>
+        </li>
+
+        <li class="nav-item active">
+          <a class="nav-link" [routerLink]="['/todo/manage-friends']">Friends</a>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+          <a class="nav-link" style="color:white;text-transform: capitalize; font-weight: bold;">
+            Hi, {{userName}}
+
+            <span>
+              <a>
+                <button class="btn btn-dark" (click)="logOut()">Log Out</button>
+              </a>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="shadow-lg p-4 mb-4 bg-white text-center" style="height:40px; text-transform: capitalize;font-size: 30px;">Friend
+    Dashboard</div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3 col-sm-4 col-3 text-center my-box left-box">
+        <div class="row left-box">
+          <div class="col-md-10" style="color:rgb(181, 118, 118);">
+            <h5 style="padding-top: 15px;color: white">Your ToDo's</h5>
+          </div>
+
+          <div class="col-md-2" style="line-height: 40px;" id="close">
+            <img src="./../../../assets/cross.png" alt="close" height="15px" width="15px" (click)="hideme()">
+          </div>
+        </div>
+
+        <div class="row left-box">
+          <div class="col-md-12">
+            <a>
+              <button class="btn btn-light btn-block" (click)="showForm()">+ Add List</button>
+            </a>
+          </div>
+        </div>
+
+        <br>
+
+        <div class="row left-box">
+          <div class="col-md-12 text-center border-bottom">
+            <form id="createListForm" [formGroup]="createListForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6 col-sm-6">
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      <input type="radio" class="form-check-input" name="listType" id="listType" formControlName="listType"
+                        value="private">
+
+                      private
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6">
+                  <div class="form-check">
+                    <label class="form-check-label">
+                      <input type="radio" class="form-check-input" name="listType" id="listType" formControlName="listType"
+                        value="public">
+
+                      public
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="List name" id="listName" formControlName="listName"
+                  (keypress)="eventHandler($event)">
+              </div>
+
+              <button type="submit" class="btn btn-success" [disabled]="!createListForm.valid">create list</button>
+            </form>
+          </div>
+
+
+
+          <div class="col-md-12" style="height: 350px;overflow-y: scroll;">
+            <!-- all list -->
+
+            <ul *ngFor="let list of allLists">
+              <li *ngIf="list.listMode =='public'" id="left-list" (click)="getListItems(list.listId, list.listName)">
+                <span>
+                  <img src="./../../../assets/list.png" alt="icon" style="height:15px;width:15px;">
+                  &nbsp;&nbsp;<span>{{list.listName}}</span>
+                </span>
+
+               
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- right side view -->
+
+      <div class="col-md-9 col-sm-5 col-6 my-box2">
+        <div class="row">
+          <!-- cutted fron here *ngIf="selectedList && allItems.length <= 1" -->
+          <div *ngIf="selectedList && allItems.length <= 1 " class="col-md-12" style="height: 450px; overflow-y: scroll">
+
+            <img *ngIf="hidden" src="./../../../assets/menu.png" alt="menu" height="15px" width="15px" (click)="showme()">
+
+            <table class="table table-hover table-borderless">
+              <thead>
+                <tr *ngIf="selectedListDetail">
+                  <th>List Name: {{selectedList}} 
+                   <!--  <span *ngIf="selectedListDetail.listMode == 'private'" style="padding-left: 25px"><button class="btn btn-success btn-sm" (click)="updateList('public')"  >Make it Public</button></span>  -->
+                    <span *ngIf="selectedListDetail.listMode == 'public'" style="padding-left: 25px"><button class="btn btn-warning btn-sm" (click)="updateList('private')"  >Make it Private</button></span>
+                    <span style="padding-left: 25px"><button type="button" class="btn btn-info btn-sm"  data-toggle="modal" data-target="#listDetail" >View details</button></span>
+                    <span style="padding-left: 25px"><button class="btn btn-danger btn-sm" (click)="deleteList()"  >Delete</button></span>
+                    </th>
+                    <div class="modal" id="listDetail" >
+                      <div class="modal-dialog">
+                        <div class="modal-content" >
+                          <!-- Modal Header -->
+                    
+                          <div class="modal-header" style="background-color:silver !important">
+                            <h4 class="modal-title">{{selectedListDetail.listName}}</h4>
+                    
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          </div>
+                    
+                          <!-- Modal body -->
+                    
+                          <div class="modal-body">
+                              
+                                  
+                                   
+                                      <div class="row">
+                                        <div class="col">
+                                          <b>List Name:</b>
+                                          {{selectedListDetail.listName}}
+                                        </div>
+                    
+                                       
+                                      </div>
+                    
+                                      <div class="row">
+                                        <div class="col">
+                                          <b>Created by:</b>
+                                          {{selectedListDetail.listCreatorName}}
+                                        </div>
+                    
+                                      </div>
+                    
+                                      <div class="row">
+                                       <div class="col">
+                                        <b>Created On:</b>
+                                        {{selectedListDetail.listCreatedOn | date}}
+                                       </div>
+                    
+                                       
+                                      </div>
+                    
+                                      <div class="row">
+                                        <div class="col">
+                                          <b>Modified By:</b>
+                                          {{selectedListDetail.listModifierName}}
+                    
+                                        </div>
+                                        
+                                      </div>
+                    
+                                      <div class="row">
+                                       <div class="col">
+                                        <b>Modified On:</b>
+                                        {{selectedListDetail.listModifiedOn | date}}
+                                       </div>
+                    
+                                        
+                                      </div>
+                                   
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>
+
+
+                    <label for="itemName" class="inp">
+                      <input type="text" id="itemName" placeholder="&nbsp;" [(ngModel)]="itemName" (keypress)="$event.keyCode == 13 ? addItem() : null">
+
+                      <span class="label">Item name</span>
+
+                      <span class="border"></span>
+                    </label>
+                  </td>
+                </tr>
+
+                <tr id="resultItems" *ngFor="let item of allItems">
+                  <td>
+                    <div class="row">
+
+                      <ul *ngIf="item.itemDone =='no'">
+                        <li><input type="checkbox" (click)="itemDone(item.itemId)" >
+                        <label for="done" style="color:blueviolet;margin-left: 15px;">
+                            <span></span>
+                            {{item.itemName}}
+                          </label>
+    
+                          <span class="three-dot">
+                            <img src="./../../../assets/three-dot.png" alt="three-dot" data-toggle="modal" data-target="#itemOption" (click)="itemModal($event, item.itemId)">
+                          </span>
+                          <ul *ngIf="item.subItems.length >  0">
+                              <li *ngFor="let current of item.subItems">
+
+                                 <ul style="list-style-type:square">
+                                   <li>{{current.subItemName}}</li>
+                                 </ul>
+                    
+                              </li>
+                            </ul>
+    </li>
+                      </ul>
+
+                   
+
+                      <ul *ngIf="item.itemDone =='yes'">
+                        <li><input type="checkbox" (click)="itemNotDone(item.itemId)" checked="checked">
+
+                          <label for="done" style="text-decoration: line-through;color: coral;margin-left: 15px">
+                            <span></span>
+                            {{item.itemName}}
+                          </label>
+    
+                          <span class="three-dot">
+                            <img src="./../../../assets/three-dot.png" alt="three-dot" data-toggle="modal" data-target="#itemOption" (click)="itemModal($event, item.itemId)">
+                          </span>
+                          <ul *ngIf="item.subItems.length >  0">
+                            <li *ngFor="let current of item.subItems">
+
+                               <ul style="list-style-type:square;color: coral;text-decoration: line-through">
+                                 <li>{{current.subItemName}}</li>
+                               </ul>
+                  
+                            </li>
+                          </ul>
+    </li>
+                      </ul>
+
+                      
+                      <!-- The Modal -->
+
+                      <div class="modal" id="itemOption" >
+                        <div class="modal-dialog">
+                          <div class="modal-content" *ngIf="currentItemDetail">
+                            <!-- Modal Header -->
+
+                            <div class="modal-header" style="background-color:silver !important">
+                              <h4 class="modal-title">{{currentItemDetail.itemName}} </h4>
+
+                              <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+
+                            <!-- Modal body -->
+
+                            <div class="modal-body">
+                              <ul>
+                                <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample1"
+                                  role="button" aria-expanded="false" aria-controls="multiCollapseExample1">
+                                  <img src="./../../../assets/edit.png" alt="edit">
+
+                                  <span>Edit Item Name</span>
+                                </li>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="collapse multi-collapse" id="multiCollapseExample1">
+                                      <div class="card card-body">
+                                        <label for="editItemName" class="inp">
+                                          <input type="text" id="editItemName" placeholder="&nbsp;"  [(ngModel)]="editItemName">
+
+                                          <span class="label">Edit Item Name</span>
+
+                                          <span class="border"></span>
+                                        </label>
+
+                                        <div class="row">
+                                          <div class="col-md-4 offset-md-2">
+                                            <button type="button" class="btn btn-sm btn-default" data-toggle="collapse"
+                                              data-target="#multiCollapseExample1" role="button" aria-expanded="false"
+                                              aria-controls="multiCollapseExample1">cancel</button>
+                                          </div>
+
+                                          <div class="col-md-4">
+                                            <button type="button" data-dismiss="modal" class="btn btn-sm btn-success"
+                                              (click)="editItemNameFunction(item.itemId)">save</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample2"
+                                  role="button" aria-expanded="false" aria-controls="multiCollapseExample2">
+                                  <img src="./../../../assets/add.png" alt="edit">
+
+                                  <span>Add Sub Item</span>
+                                </li>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="collapse multi-collapse" id="multiCollapseExample2">
+                                      <div class="card card-body">
+                                        <label for="addSubItem" class="inp">
+                                          <input type="text" id="addSubItem" placeholder="&nbsp;" [(ngModel)]="addSubItemName">
+
+                                          <span class="label">Edit Item Name</span>
+
+                                          <span class="border"></span>
+                                        </label>
+
+                                        <div class="row">
+                                          <div class="col-md-4 offset-md-2">
+                                            <button type="button" class="btn btn-sm btn-default" data-toggle="collapse"
+                                              data-target="#multiCollapseExample2" role="button" aria-expanded="false"
+                                              aria-controls="multiCollapseExample2">cancel</button>
+                                          </div>
+
+                                          <div class="col-md-4">
+                                            <button type="button" data-dismiss="modal" class="btn btn-sm btn-success"
+                                              (click)="addSubItemFunction()">Add</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample3"
+                                  role="button" aria-expanded="false" aria-controls="multiCollapseExample3">
+                                  <img src="./../../../assets/info.png" alt="edit">
+
+                                  <span>View Details</span>
+                                </li>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="collapse multi-collapse" id="multiCollapseExample3">
+                                      <div class="card card-body" *ngIf="currentItemDetail" style="font-size:16px">
+                                        <div class="row">
+                                          <b>Item Name:</b>
+
+                                          {{currentItemDetail.itemName}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Created by:</b>
+
+                                          {{currentItemDetail.itemCreatorName}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Created On:</b>
+
+                                          {{currentItemDetail.itemCreatedOn | date}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Modified On:</b>
+
+                                          {{currentItemDetail.itemModifiedOn |
+                                          date}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Modified By:</b>
+
+                                          {{currentItemDetail.itemModifierName}}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <li class="itemOptionList" data-dismiss="modal" (click)="deleteItem(currentItemDetail.itemId)">
+                                  <img src="./../../../assets/delete.png" alt="edit">
+
+                                  <span>Delete Item</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                      <div class="modal" id="subItemOption" >
+                          <div class="modal-dialog">
+                            <div class="modal-content" *ngIf="currentSubItemDetail">
+                              <!-- Modal Header -->
+  
+                              <div class="modal-header" style="background-color:silver !important">
+                                <h4 class="modal-title">{{currentSubItemDetail.subItemName}} </h4>
+  
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                              </div>
+  
+                              <!-- Modal body -->
+  
+                              <div class="modal-body">
+                                <ul>
+                                  <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample11"
+                                    role="button" aria-expanded="false" aria-controls="multiCollapseExample11">
+                                    <img src="./../../../assets/edit.png" alt="edit">
+  
+                                    <span>Edit Item Name</span>
+                                  </li>
+  
+                                  <div class="row">
+                                    <div class="col">
+                                      <div class="collapse multi-collapse" id="multiCollapseExample11">
+                                        <div class="card card-body">
+                                          <label for="editSubItemName" class="inp">
+                                            <input type="text" id="editSubItemName" placeholder="&nbsp;"  [(ngModel)]="editSubItemName">
+  
+                                            <span class="label">Edit Sub Item Name</span>
+  
+                                            <span class="border"></span>
+                                          </label>
+  
+                                          <div class="row">
+                                            <div class="col-md-4 offset-md-2">
+                                              <button type="button" class="btn btn-sm btn-default" data-toggle="collapse"
+                                                data-target="#multiCollapseExample11" role="button" aria-expanded="false"
+                                                aria-controls="multiCollapseExample11">cancel</button>
+                                            </div>
+  
+                                            <div class="col-md-4">
+                                              <button type="button" data-dismiss="modal" class="btn btn-sm btn-success"
+                                                (click)="editSubItemNameFunction(item.itemId)">save</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+  
+                               
+  
+                                  <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample13"
+                                    role="button" aria-expanded="false" aria-controls="multiCollapseExample3">
+                                    <img src="./../../../assets/info.png" alt="edit">
+  
+                                    <span>View Details</span>
+                                  </li>
+  
+                                  <div class="row">
+                                    <div class="col">
+                                      <div class="collapse multi-collapse" id="multiCollapseExample13">
+                                        <div class="card card-body" *ngIf="currentSubItemDetail" style="font-size:16px">
+                                          <div class="row">
+                                            <b>Item Name:</b>
+  
+                                            {{currentSubItemDetail.subItemName}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Created by:</b>
+  
+                                            {{currentSubItemDetail.subItemCreatorName}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Created On:</b>
+  
+                                            {{currentSubItemDetail.subItemCreatedOn | date}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Modified On:</b>
+  
+                                            {{currentSubItemDetail.subItemModifiedOn |
+                                            date}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Modified By:</b>
+  
+                                            {{currentSubItemDetail.subItemModifierName}}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+  
+                                  <li class="itemOptionList" data-dismiss="modal" (click)="deleteSubItem(currentSubItemDetail.subItemId)">
+                                    <img src="./../../../assets/delete.png" alt="edit">
+  
+                                    <span>Delete Item</span>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ----------------------------for more than one item                         -->
+          <div *ngIf="selectedList && allItems.length > 1 " class="col-md-12" style="height: 450px; overflow-y: scroll">
+
+            <img *ngIf="hidden" src="./../../../assets/menu.png" alt="menu" height="15px" width="15px" (click)="showme()">
+
+            <table class="table table-hover table-borderless">
+              <thead>
+                <tr>
+                  <th>List Name: {{selectedList}} 
+                    <span *ngIf="this.selectedListDetail.listMode == 'private'" style="padding-left: 25px"><button class="btn btn-success btn-sm" (click)="updateList('public')"  >Make it Public</button></span>
+                    <span *ngIf="this.selectedListDetail.listMode == 'public'" style="padding-left: 25px"><button class="btn btn-warning btn-sm" (click)="updateList('private')"  >Make it Private</button></span>
+                    <span style="padding-left: 25px"><button type="button" class="btn btn-info btn-sm"  data-toggle="modal" data-target="#listDetail" >View details</button></span>
+                    <span style="padding-left: 25px"><button class="btn btn-danger btn-sm" (click)="deleteList()"  >Delete</button></span>
+                    </th>
+                    <div class="modal" id="listDetail" >
+                      <div class="modal-dialog">
+                        <div class="modal-content" >
+                          <!-- Modal Header -->
+                    
+                          <div class="modal-header" style="background-color:silver !important">
+                            <h4 class="modal-title">{{selectedListDetail.listName}}</h4>
+                    
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          </div>
+                    
+                          <!-- Modal body -->
+                    
+                          <div class="modal-body">
+                              
+                                  
+                                   
+                                      <div class="row">
+                                        <div class="col">
+                                          <b>List Name:</b>
+                                          {{selectedListDetail.listName}}
+                                        </div>
+                    
+                                       
+                                      </div>
+                    
+                                      <div class="row">
+                                        <div class="col">
+                                          <b>Created by:</b>
+                                          {{selectedListDetail.listCreatorName}}
+                                        </div>
+                    
+                                      </div>
+                    
+                                      <div class="row">
+                                       <div class="col">
+                                        <b>Created On:</b>
+                                        {{selectedListDetail.listCreatedOn | date}}
+                                       </div>
+                    
+                                       
+                                      </div>
+                    
+                                      <div class="row">
+                                        <div class="col">
+                                          <b>Modified By:</b>
+                                          {{selectedListDetail.listModifierName}}
+                    
+                                        </div>
+                                        
+                                      </div>
+                    
+                                      <div class="row">
+                                       <div class="col">
+                                        <b>Modified On:</b>
+                                        {{selectedListDetail.listModifiedOn | date}}
+                                       </div>
+                    
+                                        
+                                      </div>
+                                   
+                            
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>
+
+
+                    <label for="itemName" class="inp">
+                      <input type="text" id="itemName" placeholder="&nbsp;" [(ngModel)]="itemName" (keypress)="$event.keyCode == 13 ? addItem() : null">
+
+                      <span class="label">Item name</span>
+
+                      <span class="border"></span>
+                    </label>
+                  </td>
+                </tr>
+
+                <tr id="resultItems" *ngFor="let item of allItems">
+                  <td>
+                    <div class="row">
+
+                      <ul *ngIf="item.itemDone =='no'">
+                        <li><input type="checkbox" (click)="itemDone(item.itemId)" >
+                        <label for="done" style="color:blueviolet;margin-left: 15px;">
+                            <span></span>
+                            {{item.itemName}}
+                          </label>
+    
+                          <span class="three-dot">
+                            <img src="./../../../assets/three-dot.png" alt="three-dot" data-toggle="modal" data-target="#itemOption" (click)="itemModal($event, item.itemId)">
+                          </span>
+                          <ul *ngIf="item.subItems.length >  0">
+                              <li *ngFor="let current of item.subItems">
+
+                                 <ul style="list-style-type:square">
+                                   <li>{{current.subItemName}}</li>
+                                 </ul>
+                    
+                              </li>
+                            </ul>
+    </li>
+                      </ul>
+
+                   
+
+                      <ul *ngIf="item.itemDone =='yes'">
+                        <li><input type="checkbox" (click)="itemNotDone(item.itemId)" checked="checked">
+
+                          <label for="done" style="text-decoration: line-through;color: coral;margin-left: 15px">
+                            <span></span>
+                            {{item.itemName}}
+                          </label>
+    
+                          <span class="three-dot">
+                            <img src="./../../../assets/three-dot.png" alt="three-dot" data-toggle="modal" data-target="#itemOption" (click)="itemModal($event, item.itemId)">
+                          </span>
+                          <ul *ngIf="item.subItems.length >  0">
+                            <li *ngFor="let current of item.subItems">
+
+                               <ul style="list-style-type:square;color: coral;text-decoration: line-through">
+                                 <li>{{current.subItemName}}</li>
+                               </ul>
+                  
+                            </li>
+                          </ul>
+    </li>
+                      </ul>
+
+                      
+                      <!-- The Modal -->
+
+                      <div class="modal" id="itemOption" >
+                        <div class="modal-dialog">
+                          <div class="modal-content" *ngIf="currentItemDetail">
+                            <!-- Modal Header -->
+
+                            <div class="modal-header" style="background-color:silver !important">
+                              <h4 class="modal-title">{{currentItemDetail.itemName}} </h4>
+
+                              <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+
+                            <!-- Modal body -->
+
+                            <div class="modal-body">
+                              <ul>
+                                <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample1"
+                                  role="button" aria-expanded="false" aria-controls="multiCollapseExample1">
+                                  <img src="./../../../assets/edit.png" alt="edit">
+
+                                  <span>Edit Item Name</span>
+                                </li>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="collapse multi-collapse" id="multiCollapseExample1">
+                                      <div class="card card-body">
+                                        <label for="editItemName" class="inp">
+                                          <input type="text" id="editItemName" placeholder="&nbsp;"  [(ngModel)]="editItemName">
+
+                                          <span class="label">Edit Item Name</span>
+
+                                          <span class="border"></span>
+                                        </label>
+
+                                        <div class="row">
+                                          <div class="col-md-4 offset-md-2">
+                                            <button type="button" class="btn btn-sm btn-default" data-toggle="collapse"
+                                              data-target="#multiCollapseExample1" role="button" aria-expanded="false"
+                                              aria-controls="multiCollapseExample1">cancel</button>
+                                          </div>
+
+                                          <div class="col-md-4">
+                                            <button type="button" data-dismiss="modal" class="btn btn-sm btn-success"
+                                              (click)="editItemNameFunction(item.itemId)">save</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample2"
+                                  role="button" aria-expanded="false" aria-controls="multiCollapseExample2">
+                                  <img src="./../../../assets/add.png" alt="edit">
+
+                                  <span>Add Sub Item</span>
+                                </li>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="collapse multi-collapse" id="multiCollapseExample2">
+                                      <div class="card card-body">
+                                        <label for="addSubItem" class="inp">
+                                          <input type="text" id="addSubItem" placeholder="&nbsp;" [(ngModel)]="addSubItemName">
+
+                                          <span class="label">Edit Item Name</span>
+
+                                          <span class="border"></span>
+                                        </label>
+
+                                        <div class="row">
+                                          <div class="col-md-4 offset-md-2">
+                                            <button type="button" class="btn btn-sm btn-default" data-toggle="collapse"
+                                              data-target="#multiCollapseExample2" role="button" aria-expanded="false"
+                                              aria-controls="multiCollapseExample2">cancel</button>
+                                          </div>
+
+                                          <div class="col-md-4">
+                                            <button type="button" data-dismiss="modal" class="btn btn-sm btn-success"
+                                              (click)="addSubItemFunction()">Add</button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample3"
+                                  role="button" aria-expanded="false" aria-controls="multiCollapseExample3">
+                                  <img src="./../../../assets/info.png" alt="edit">
+
+                                  <span>View Details</span>
+                                </li>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="collapse multi-collapse" id="multiCollapseExample3">
+                                      <div class="card card-body" *ngIf="currentItemDetail" style="font-size:16px">
+                                        <div class="row">
+                                          <b>Item Name:</b>
+
+                                          {{currentItemDetail.itemName}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Created by:</b>
+
+                                          {{currentItemDetail.itemCreatorName}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Created On:</b>
+
+                                          {{currentItemDetail.itemCreatedOn | date}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Modified On:</b>
+
+                                          {{currentItemDetail.itemModifiedOn |
+                                          date}}
+                                        </div>
+
+                                        <div class="row">
+                                          <b>Modified By:</b>
+
+                                          {{currentItemDetail.itemModifierName}}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <li class="itemOptionList" data-dismiss="modal" (click)="deleteItem(item.itemId)">
+                                  <img src="./../../../assets/delete.png" alt="edit">
+
+                                  <span>Delete Item</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                      <div class="modal" id="subItemOption" >
+                          <div class="modal-dialog">
+                            <div class="modal-content" *ngIf="currentSubItemDetail">
+                              <!-- Modal Header -->
+  
+                              <div class="modal-header" style="background-color:silver !important">
+                                <h4 class="modal-title">{{currentSubItemDetail.subItemName}} </h4>
+  
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                              </div>
+  
+                              <!-- Modal body -->
+  
+                              <div class="modal-body">
+                                <ul>
+                                  <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample11"
+                                    role="button" aria-expanded="false" aria-controls="multiCollapseExample11">
+                                    <img src="./../../../assets/edit.png" alt="edit">
+  
+                                    <span>Edit Item Name</span>
+                                  </li>
+  
+                                  <div class="row">
+                                    <div class="col">
+                                      <div class="collapse multi-collapse" id="multiCollapseExample11">
+                                        <div class="card card-body">
+                                          <label for="editSubItemName" class="inp">
+                                            <input type="text" id="editSubItemName" placeholder="&nbsp;"  [(ngModel)]="editSubItemName">
+  
+                                            <span class="label">Edit Sub Item Name</span>
+  
+                                            <span class="border"></span>
+                                          </label>
+  
+                                          <div class="row">
+                                            <div class="col-md-4 offset-md-2">
+                                              <button type="button" class="btn btn-sm btn-default" data-toggle="collapse"
+                                                data-target="#multiCollapseExample11" role="button" aria-expanded="false"
+                                                aria-controls="multiCollapseExample11">cancel</button>
+                                            </div>
+  
+                                            <div class="col-md-4">
+                                              <button type="button" data-dismiss="modal" class="btn btn-sm btn-success"
+                                                (click)="editSubItemNameFunction(item.itemId)">save</button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+  
+                               
+  
+                                  <li class="itemOptionList" data-toggle="collapse" data-target="#multiCollapseExample13"
+                                    role="button" aria-expanded="false" aria-controls="multiCollapseExample3">
+                                    <img src="./../../../assets/info.png" alt="edit">
+  
+                                    <span>View Details</span>
+                                  </li>
+  
+                                  <div class="row">
+                                    <div class="col">
+                                      <div class="collapse multi-collapse" id="multiCollapseExample13">
+                                        <div class="card card-body" *ngIf="currentSubItemDetail" style="font-size:16px">
+                                          <div class="row">
+                                            <b>Item Name:</b>
+  
+                                            {{currentSubItemDetail.subItemName}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Created by:</b>
+  
+                                            {{currentSubItemDetail.subItemCreatorName}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Created On:</b>
+  
+                                            {{currentSubItemDetail.subItemCreatedOn | date}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Modified On:</b>
+  
+                                            {{currentSubItemDetail.subItemModifiedOn |
+                                            date}}
+                                          </div>
+  
+                                          <div class="row">
+                                            <b>Modified By:</b>
+  
+                                            {{currentSubItemDetail.subItemModifierName}}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+  
+                                  <li class="itemOptionList" data-dismiss="modal" (click)="deleteSubItem(currentSubItemDetail.subItemId)">
+                                    <img src="./../../../assets/delete.png" alt="edit">
+  
+                                    <span>Delete Item</span>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</body>
+
+
